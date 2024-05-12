@@ -5,6 +5,7 @@ import shutil
 #menu
 def menu_configuracion():
     config = None
+    clasificacion_hecha = False
     while True:
         print("\n--- Menú de Configuración ---")
         print("1. Crear Nuevo Archivo de Configuración")
@@ -13,6 +14,7 @@ def menu_configuracion():
         print("4. Cambiar Parámetros")
         print("5. Crear directorios")
         print("6. Clasificar archivos")
+        print("7. Filtrar archivos")
         print("0. Salir")
         opcion = input("Selecciona una opción: ")
         if opcion == '1':
@@ -37,12 +39,19 @@ def menu_configuracion():
         elif opcion == '6':
             if config:
                 clasificar_archivos(config)
+                clasificacion_hecha = True
             else:
-                print("No se ha cargado ninguna configuración")
+                print("No se ha cargado ninguna configuración.")
+        elif opcion == '7':
+            if config and clasificacion_hecha:
+                filtrar_archivos(config)
+            else:
+                print("No se ha cargado ninguna configuración o no se ha realizado la clasificación previamente.")
         elif opcion == '0':
             break
         else:
             print("Opción no válida.")
+
 
 
 def ver_configuracion(config):
@@ -173,6 +182,26 @@ def clasificar_archivos(config):
     except Exception as e:
         print(f"Error al clasificar archivos: {e}")
 
+def filtrar_archivos(config):
+    dir_init = config.get('PARAMETROS', 'DIR_INIT')
+    dir_quarantena = config.get('PARAMETROS', 'DIR_QUARANTENA')
+    extensio_filtrada = config.get('PARAMETROS', 'EXTENSIO_FILTRADA')
+    
+    try:
+        for root, dirs, files in os.walk(dir_init):
+            for file in files:
+                if file.endswith(extensio_filtrada):
+                    file_path = os.path.join(root, file)
+                    # Mantener la estructura de carpetas original
+                    relative_path = os.path.relpath(file_path, dir_init)
+                    quarantined_path = os.path.join(dir_quarantena, relative_path)
+                    # Crear directorios si no existen
+                    os.makedirs(os.path.dirname(quarantined_path), exist_ok=True)
+                    # Mover archivo al directorio de cuarentena
+                    shutil.move(file_path, quarantined_path)
+                    print(f"Archivo {file} filtrado y movido a {quarantined_path}")
+    except Exception as e:
+        print(f"Error al filtrar archivos: {e}")
 
 
 #ejecutar
