@@ -1,5 +1,6 @@
 import configparser
 import os
+import shutil
 
 #menu
 def menu_configuracion():
@@ -125,6 +126,48 @@ def crear_directorios(config):
                     print(f"Directorio {size_dir} creado correctamente para el usuario {user}.")
     except Exception as e:
         print(f"Error al crear directorios: {e}")
+
+def clasificar_archivos(config):
+    dir_init = config.get('PARAMETROS', 'DIR_INIT')
+    dir_dst = config.get('PARAMETROS', 'DIR_DST')
+    mida_petita = int(config.get('PARAMETROS', 'MIDA_PETITA')) * 1024  # Convertir MB a bytes
+    mida_mitjana = int(config.get('PARAMETROS', 'MIDA_MITJANA')) * 1024  # Convertir MB a bytes
+    
+    try:
+        for root, dirs, files in os.walk(dir_init):
+            for file in files:
+                file_path = os.path.join(root, file)
+                # Obtener información del archivo
+                file_size = os.path.getsize(file_path)
+                file_owner = os.stat(file_path).st_uid
+
+                # Clasificar por tamaño
+                if file_size < mida_petita:
+                    size_dir = 'petit'
+                elif mida_petita < file_size < mida_mitjana:
+                    size_dir = 'mitja'
+                else:
+                    size_dir = 'gran'
+
+                # Clasificar por propietario
+                owner_dir = str(file_owner)
+
+                # Crear directorio final
+                final_dir = os.path.join(dir_dst, owner_dir, size_dir)
+
+                # Crear directorios si no existen
+                if not os.path.exists(final_dir):
+                    os.makedirs(final_dir)
+
+                # Mover archivo al directorio final
+                shutil.move(file_path, final_dir)
+
+                print(f"Archivo {file} clasificado correctamente en {final_dir}")
+
+    except Exception as e:
+        print(f"Error al clasificar archivos: {e}")
+
+
 
 #ejecutar
 if __name__ == "__main__":
