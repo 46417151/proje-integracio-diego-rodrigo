@@ -12,6 +12,7 @@ def menu_configuracion():
         print("3. Ver Configuración")
         print("4. Cambiar Parámetros")
         print("5. Crear directorios")
+        print("5. Clasificar archivos")
         print("0. Salir")
         opcion = input("Selecciona una opción: ")
         if opcion == '1':
@@ -33,6 +34,11 @@ def menu_configuracion():
                 crear_directorios(config)
             else:
                 print("No se ha cargado ninguna configuración.")
+        elif opcion == '6':
+            if config:
+                clasificar_archivos(config)
+            else:
+                print("No se ha cargado ninguna configuración")
         elif opcion == '0':
             break
         else:
