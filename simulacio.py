@@ -2,6 +2,8 @@ import os
 import random
 from faker import Faker
 
+# con rbg como inicial en este caso
+
 # Create a main directory
 main_dir = "P1_rbg"
 os.makedirs(main_dir, exist_ok=True)
