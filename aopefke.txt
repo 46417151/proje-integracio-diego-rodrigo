@@ -1,0 +1,67 @@
+2. CLASSIFICACIÓ D’ARXIUS                                                                  
+Se suposa que hi ha un directori amb arxius sospitosos d’infecció (DIR_INIT). Aquests arxius s’ha de classificar i ficar en una carpeta especial per a ser examinats mes endavant.
+
+Els arxius originals estan en DIR_INIT i els classificats s’han de desar en DIR_DST
+
+Aquesta opció fa la classificació dels arxius en funció de dos criteris: mida i propietari
+
+
+Directori final de destí: segons la mida
+Els arxius han d’estar classificats en petit/mitja/gran.
+
+Suposem que el valor del paràmetre MIDA_PETITA és n1 
+Suposem que el valor del paràmetre de MIDA_MITJANA és n2
+
+Això servirà per dir que els arxius seran els següents:
+
+arxius petits: mida < n1
+arxius mitjans:  n1 < mida <  n2
+arxius grans:  n2 < mida 
+
+
+Directori final de destí: segons el propietari
+
+Hauran d'anar al DIR_DST/propietari/mida
+
+Exemple
+
+SI tenim 
+DIR_INIT és ggm_init
+MIDA_PETITA  és 5  
+MIDA_MITJANA és 12 
+DIR_DST és ggm_dst
+
+arxius petits:  0 < 5MB
+arxius mitjans:  5MB < 12MB
+arxius grans:   >=12MB
+
+
+
+$ ls -la  ggm_init/d1/d2/d2/
+-rw-r--r--  1 ggm1 ggm1   187732 abr  7 23:43 foo_A.java
+-rw-r--r--  1 ggm2 ggm2   9539249 abr  7 23:43 foo_B.js
+-rw-r--r--  1 ggm2 ggm2   14569249 abr  7 23:43 foo_C.txt
+
+
+foo_A.java
+mida:187732 bytes = 187KB (aprox) → Petit 
+propietari ggm1
+foo_B.js 
+mida: 9539249 bytes = 9MB (aprox) → Mitja
+propietari: ggm2
+
+foo_C.js
+mida: 14569249 bytes = 14MB (aprox )→ gran 
+propietari: ggm2
+Resultat
+$ ls -la  ggm_dst/ggm1/petit/
+-rw-r--r--  1 ggm1 ggm1   187732 abr  7 23:43 foo_A.java
+$ ls -la  ggm_dst/ggm2/mitja/
+-rw-r--r--  1 ggm2 ggm2 9539249 abr  7 23:43 foo_B.js
+$ ls -la  ggm_dst/ggm2/gran/
+-rw-r--r--  1 ggm2 ggm2  14569249 abr  7 23:43 foo_C.txt
+
+ATENCIÓ:  
+recordeu els múltiples de 1024
+1024B = 1KB 
+1024*1024B = 1MB
