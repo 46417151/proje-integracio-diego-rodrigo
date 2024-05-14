@@ -5,7 +5,7 @@ import shutil
 def menu():
     config = None
     while True:
-        print("\n--- Menú de Configuración ---")
+        print("--- Menú de Configuración ---")
         print("1. Crear Nuevo Archivo de Configuración")
         print("2. Cargar Configuración")
         print("3. Ver Configuración")
