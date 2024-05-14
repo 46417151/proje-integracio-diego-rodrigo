@@ -78,11 +78,11 @@ def crear_configuracion():
     config = configparser.ConfigParser()
     config['PARAMETROS'] = {}
     print("Introduce los valores para los siguientes parámetros:")
-    for parametro in ['DIR_INIT', 'DIR_DST', 'MIDA_PETITA', 'MIDA_MITJANA', 'EXTENSIO_FILTRADA', 'DIR_QUARANTENA', 'ZIP_FILE', 'REPORT_FILE']:
+    for parametro in ['DIR_INIT', 'DIR_DST', 'MIDA_PETITA', 'MIDA_MITJANA', 'MIDA_GRAN', 'EXTENSIO_FILTRADA', 'DIR_QUARANTENA', 'ZIP_FILE', 'REPORT_FILE']:
         valor = input(f"{parametro}: ")
         config['PARAMETROS'][parametro] = valor
     print("¡Configuración creada con éxito!")
-    #Guardar configuración
+    # Guardar configuración
     archivo_nuevo = input("Introduce el nombre del archivo de configuración a crear o sobrescribir: ")
     confirmacion = input(f"¿Estás seguro que quieres guardar la configuración en {archivo_nuevo}? (S/N): ")
     if confirmacion.upper() == 'S':
@@ -137,9 +137,9 @@ def clasificar_archivos(config):
     try:
         dir_init = config.get('PARAMETROS', 'DIR_INIT')
         dir_dst = config.get('PARAMETROS', 'DIR_DST')
-        mida_petita = int(config.get('PARAMETROS', 'MIDA_PETITA')) * 1024
-        mida_mitjana = int(config.get('PARAMETROS', 'MIDA_MITJANA')) * 1024
-
+        mida_petita = int(config.get('PARAMETROS', 'MIDA_PETITA')) * 1024 * 1024
+        mida_mitjana = int(config.get('PARAMETROS', 'MIDA_MITJANA')) * 1024 * 1024
+        mida_gran = int(config.get('PARAMETROS', 'MIDA_GRAN')) * 1024 * 1024
         for root, dirs, files in os.walk(dir_init):
             for file in files:
                 file_path = os.path.join(root, file)
@@ -162,18 +162,19 @@ def clasificar_archivos(config):
                 print(f"Archivo {file} clasificado correctamente en {final_dir}")
     except Exception as e:
         print(f"Error al clasificar archivos: {e}")
-
 def filtrar_archivos(config):
     try:
-        dir_init = config.get('PARAMETROS', 'DIR_INIT')
+        dir_dst = config.get('PARAMETROS', 'DIR_DST')
         dir_quarantena = config.get('PARAMETROS', 'DIR_QUARANTENA')
         extensio_filtrada = config.get('PARAMETROS', 'EXTENSIO_FILTRADA')
 
-        for root, dirs, files in os.walk(dir_init):
+        os.makedirs(dir_quarantena, exist_ok=True)
+
+        for root, dirs, files in os.walk(dir_dst):
             for file in files:
                 if file.endswith(extensio_filtrada):
                     file_path = os.path.join(root, file)
-                    relative_path = os.path.relpath(file_path, dir_init)
+                    relative_path = os.path.relpath(file_path, dir_dst)
                     quarantined_path = os.path.join(dir_quarantena, relative_path)
                     os.makedirs(os.path.dirname(quarantined_path), exist_ok=True)
                     shutil.move(file_path, quarantined_path)
@@ -183,3 +184,4 @@ def filtrar_archivos(config):
 
 if __name__ == "__main__":
     menu()
+
