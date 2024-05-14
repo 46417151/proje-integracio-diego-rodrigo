@@ -1,38 +1,67 @@
-import os
 import random
-from faker import Faker
+import os
+import os.path
+import sys
+import shutil
 
-# con rbg como inicial en este caso
 
-# Create a main directory
-main_dir = "P1_rbg"
-os.makedirs(main_dir, exist_ok=True)
+def generate_big_random_letters(filename,size):
+    """
+    generate big random letters/alphabets to a file
+    :param filename: the filename
+    :param size: the size in bytes
+    :return: void
+    """
+    import random
+    import string
 
-# Create a directory for files
-files_dir = os.path.join(main_dir, "files")
-os.makedirs(files_dir, exist_ok=True)
+    chars = ''.join([random.choice(string.ascii_letters) for i in range(size)]) #1
 
-# Create users
-users = ["rbg1", "rbg2", "rbg3"]
+    with open(filename, 'w') as f:
+        f.write(chars)
+    pass
 
-# Create files
-fake = Faker()
-for i in range(10):  # Change this number to create more or less files
-    file_size = random.randint(1, 20)  # File size in KB
-    file_name = fake.file_name(category=None, extension=None)
-    file_path = os.path.join(files_dir, file_name)
-    
-    # Assign random user to file
-    file_owner = random.choice(users)
-    
-    # Create file with random size
-    with open(file_path, "wb") as f:
-        f.write(os.urandom(file_size * 1024))  # Convert KB to bytes
+if (not len (sys.argv) == 2):
+    print('Necesito tus iniciales')
+    sys.exit()
 
-    # Change file owner
-    os.system(f"chown {file_owner} {file_path}")
+iniciales = sys.argv[1]
+users = []
+for i in range(1,4):
+    user = iniciales + str(i)
+    users.append(user)
+print(users)
+for user in users:
+    cmd = f'useradd {user}'
+    os.system(cmd)
+    print('excuted:',cmd)
 
-    # Randomly assign suspicious extensions
-    if random.choice([True, False]):
-        suspicious_extension = ".exe"  # Change this to the extension you want
-        os.rename(file_path, file_path + suspicious_extension)
+dir = iniciales + '_init'
+if os.path.exists(dir):
+    print('dir',dir,'ja existeix')
+else:
+    os.mkdir(dir)
+    print('created:',dir)
+
+for i in range (1,20):
+    fname = 'foo_' + str(i)
+    size = random.randint(1,20) * 1024*1024
+    extension = random.choice(['txt','java','c','cpp','js'])
+    dir_final = dir
+    for i in range (random.randint(1,4)):
+            
+        dir_final=  os.path.join(dir_final,random.choice(['d1','d2','d3']) )
+    path = os.path.join(dir_final,f'{fname}.{extension}')
+    os.makedirs(os.path.dirname(path),exist_ok=True)
+    generate_big_random_letters(path, size)
+    user = random.choice(users)
+    shutil.chown(path,user,user)  
+    print(f'Created {path} amb {size} bytes propietary {user}')
+    if (random.random() > 0.9):
+        extension = random.choice(['pdf','bin','exe'])
+        shutil.move(path, path + '.' +extension)
+
+
+
+
+
