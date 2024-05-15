@@ -1,58 +1,50 @@
-import configparser
 import os
+import configparser
 import shutil
+import simulacio
 
-#menu
-def menu_configuracion():
+def menu():
     config = None
-    clasificacion_hecha = False
     while True:
-        print("\n--- Menú de Configuración ---")
+        print("--- Menú de Configuración ---")
         print("1. Crear Nuevo Archivo de Configuración")
         print("2. Cargar Configuración")
         print("3. Ver Configuración")
         print("4. Cambiar Parámetros")
-        print("5. Crear directorios")
-        print("6. Clasificar archivos")
-        print("7. Filtrar archivos")
+        print("5. Clasificar Archivos")
+        print("6. Filtrar Archivos")
         print("0. Salir")
         opcion = input("Selecciona una opción: ")
+
         if opcion == '1':
             config = crear_configuracion()
         elif opcion == '2':
             config = cargar_configuracion()
         elif opcion == '3':
-            if config:
+            if config is not None:
                 ver_configuracion(config)
             else:
-                print("No se ha cargado ninguna configuración.")
+                print("Primero debes cargar o crear una configuración.")
         elif opcion == '4':
-            if config:
-                config = cambiar_parametros(config)
+            if config is not None:
+                cambiar_parametros(config)
             else:
-                print("No se ha cargado ninguna configuración.")
+                print("Primero debes cargar o crear una configuración.")
         elif opcion == '5':
-            if config:
-                crear_directorios(config)
-            else:
-                print("No se ha cargado ninguna configuración.")
-        elif opcion == '6':
-            if config:
+            if config is not None:
                 clasificar_archivos(config)
-                clasificacion_hecha = True
             else:
-                print("No se ha cargado ninguna configuración.")
-        elif opcion == '7':
-            if config and clasificacion_hecha:
+                print("Primero debes cargar o crear una configuración.")
+        elif opcion == '6':
+            if config is not None:
                 filtrar_archivos(config)
             else:
-                print("No se ha cargado ninguna configuración o no se ha realizado la clasificación previamente.")
+                print("Primero debes cargar o crear una configuración.")
         elif opcion == '0':
+            print("Saliendo del programa...")
             break
         else:
-            print("Opción no válida.")
-
-
+            print("Opción no válida. Por favor, intenta de nuevo.")
 
 def ver_configuracion(config):
     for section in config.sections():
@@ -63,148 +55,127 @@ def ver_configuracion(config):
             print(f"{key}: {value}")
         print()
 
-
 def cargar_configuracion():
     archivo_config = input("Introduce el nombre del archivo de configuración: ")
     config = configparser.ConfigParser()
-    try:
-        config.read(archivo_config)
-        print("¡Configuración cargada")
-        return config
-    except FileNotFoundError:
+    if not os.path.exists(archivo_config):
         print("El archivo de configuración no existe.")
         return None
+    try:
+        config.read(archivo_config)
+        print("¡Configuración cargada con éxito!")
+        return config
     except configparser.Error as e:
         print("Error al leer el archivo de configuración:", e)
         return None
-
-
-def cambiar_parametros(config):
-    seccion = 'PARAMETROS'  # Sección fija para los parámetros
-    parametros = config[seccion]  # Obtener todos los parámetros de la sección
-    print("Parámetros disponibles para modificar:")
-    for parametro, valor in parametros.items():
-        print(f"{parametro}: {valor}")  # Mostrar el nombre del parámetro y su valor actual
-    
-    parametro = input("Introduce el nombre del parámetro que quieres cambiar: ")
-    if parametro in parametros:
-        valor_actual = parametros[parametro]
-        print(f"El valor actual de {parametro} es: {valor_actual}")  # Mostrar el valor actual del parámetro
-        nuevo_valor = input("Introduce el nuevo valor: ")
-        config.set(seccion, parametro, nuevo_valor)
-        print("¡Valor cambiado con éxito!")
-        
-        # Guardar la configuración actualizada en el archivo
-        archivo_nuevo = input("Introduce el nombre del archivo de configuración a actualizar: ")
-        confirmacion = input(f"¿Estás seguro que quieres guardar la configuración en {archivo_nuevo}? (S/N): ")
-        if confirmacion.upper() == 'S':
-            with open(archivo_nuevo, 'w') as configfile:
-                config.write(configfile)
-            print("¡Configuración guardada con éxito!")
-    else:
-        print("El parámetro ingresado no es válido.")
-    
-    return config
-
-
 
 def crear_configuracion():
     config = configparser.ConfigParser()
     config['PARAMETROS'] = {}
     print("Introduce los valores para los siguientes parámetros:")
-    for parametro in ['DIR_INIT', 'DIR_DST', 'MIDA_PETITA', 'MIDA_MITJANA', 'EXTENSIO_FILTRADA', 'DIR_QUARANTENA', 'ZIP_FILE', 'REPORT_FILE']:
+    for parametro in ['DIR_INIT', 'DIR_DST', 'MIDA_PETITA', 'MIDA_MITJANA', 'MIDA_GRAN', 'EXTENSIO_FILTRADA', 'DIR_QUARANTENA', 'ZIP_FILE', 'REPORT_FILE']:
         valor = input(f"{parametro}: ")
         config['PARAMETROS'][parametro] = valor
     print("¡Configuración creada con éxito!")
-    #Guardar configuración
+    # Guardar configuración
     archivo_nuevo = input("Introduce el nombre del archivo de configuración a crear o sobrescribir: ")
     confirmacion = input(f"¿Estás seguro que quieres guardar la configuración en {archivo_nuevo}? (S/N): ")
     if confirmacion.upper() == 'S':
-        with open(archivo_nuevo, 'w') as configfile:
-            config.write(configfile)
-        print("¡Configuración guardada con éxito!")
+        try:
+            with open(archivo_nuevo, 'w') as configfile:
+                config.write(configfile)
+            print("¡Configuración guardada con éxito!")
+        except IOError as e:
+            print(f"Error al guardar la configuración: {e}")
 
+def cambiar_parametros(config):
+    seccion = 'PARAMETROS'
+    parametros = config[seccion]
+    print("Parámetros disponibles para modificar:")
+    for parametro, valor in parametros.items():
+        print(f"{parametro}: {valor}")
 
-def crear_directorios(config):
-    dir_dst = config.get('PARAMETROS', 'DIR_DST')
-    iniciales = input("Pon tus iniciales para dar nombre a los directorios: ")
-    try:
-        if not os.path.exists(dir_dst):
-            os.makedirs(dir_dst)
-            print(f"Directorio principal {dir_dst} creado correctamente.")
-        for user in [f"{iniciales}1", f"{iniciales}2", f"{iniciales}3"]:
-            user_dir = os.path.join(dir_dst, user)
-            for size in ['petit', 'mitja', 'gran']:
-                size_dir = os.path.join(user_dir, size)
-                if not os.path.exists(size_dir):
-                    os.makedirs(size_dir)
-                    print(f"Directorio {size_dir} creado correctamente para el usuario {user}.")
-    except Exception as e:
-        print(f"Error al crear directorios: {e}")
+    parametro = input("Introduce el nombre del parámetro que quieres cambiar: ")
+    if parametro in parametros:
+        valor_actual = parametros[parametro]
+        print(f"El valor actual de {parametro} es: {valor_actual}")
+        nuevo_valor = input("Introduce el nuevo valor: ")
+        config.set(seccion, parametro, nuevo_valor)
+        print("¡Valor cambiado con éxito!")
+
+        archivo_nuevo = input("Introduce el nombre del archivo de configuración a actualizar: ")
+        confirmacion = input(f"¿Estás seguro que quieres guardar la configuración en {archivo_nuevo}? (S/N): ")
+        if confirmacion.upper() == 'S':
+            try:
+                with open(archivo_nuevo, 'w') as configfile:
+                    config.write(configfile)
+                print("¡Configuración guardada con éxito!")
+            except IOError as e:
+                print(f"Error al guardar la configuración: {e}")
+    else:
+        print("El parámetro ingresado no es válido.")
+
+    return config
+
+#def crear_directorios(config):
+#    dir_dst = config.get('PARAMETROS', 'DIR_DST')
+#    if not os.path.exists(dir_dst):
+#        try:
+#            os.makedirs(dir_dst)
+#            print(f"Directorio {dir_dst} creado correctamente.")
+#        except OSError as e:
+#            print(f"Error al crear el directorio {dir_dst}: {e}")
+#    else:
+#        print(f"El directorio {dir_dst} ya existe.")
 
 def clasificar_archivos(config):
-    dir_init = config.get('PARAMETROS', 'DIR_INIT')
-    dir_dst = config.get('PARAMETROS', 'DIR_DST')
-    mida_petita = int(config.get('PARAMETROS', 'MIDA_PETITA')) * 1024  # Convertir MB a bytes
-    mida_mitjana = int(config.get('PARAMETROS', 'MIDA_MITJANA')) * 1024  # Convertir MB a bytes
-    
     try:
+        dir_init = config.get('PARAMETROS', 'DIR_INIT')
+        dir_dst = config.get('PARAMETROS', 'DIR_DST')
+        mida_petita = int(config.get('PARAMETROS', 'MIDA_PETITA')) * 1024 * 1024
+        mida_mitjana = int(config.get('PARAMETROS', 'MIDA_MITJANA')) * 1024 * 1024
+        mida_gran = int(config.get('PARAMETROS', 'MIDA_GRAN')) * 1024 * 1024
         for root, dirs, files in os.walk(dir_init):
             for file in files:
                 file_path = os.path.join(root, file)
-                # Obtener información del archivo
                 file_size = os.path.getsize(file_path)
                 file_owner = os.stat(file_path).st_uid
 
-                # Clasificar por tamaño
                 if file_size < mida_petita:
                     size_dir = 'petit'
-                elif mida_petita < file_size < mida_mitjana:
+                elif mida_petita <= file_size < mida_mitjana:
                     size_dir = 'mitja'
                 else:
                     size_dir = 'gran'
 
-                # Clasificar por propietario
-                owner_dir = str(file_owner)
+                final_dir = os.path.join(dir_dst, str(file_owner), size_dir)
 
-                # Crear directorio final
-                final_dir = os.path.join(dir_dst, owner_dir, size_dir)
-
-                # Crear directorios si no existen
                 if not os.path.exists(final_dir):
                     os.makedirs(final_dir)
 
-                # Mover archivo al directorio final
                 shutil.move(file_path, final_dir)
-
                 print(f"Archivo {file} clasificado correctamente en {final_dir}")
-
     except Exception as e:
         print(f"Error al clasificar archivos: {e}")
-
 def filtrar_archivos(config):
-    dir_init = config.get('PARAMETROS', 'DIR_INIT')
-    dir_quarantena = config.get('PARAMETROS', 'DIR_QUARANTENA')
-    extensio_filtrada = config.get('PARAMETROS', 'EXTENSIO_FILTRADA')
-    
     try:
-        for root, dirs, files in os.walk(dir_init):
+        dir_dst = config.get('PARAMETROS', 'DIR_DST')
+        dir_quarantena = config.get('PARAMETROS', 'DIR_QUARANTENA')
+        extensio_filtrada = config.get('PARAMETROS', 'EXTENSIO_FILTRADA')
+
+        os.makedirs(dir_quarantena, exist_ok=True)
+
+        for root, dirs, files in os.walk(dir_dst):
             for file in files:
                 if file.endswith(extensio_filtrada):
                     file_path = os.path.join(root, file)
-                    # Mantener la estructura de carpetas original
-                    relative_path = os.path.relpath(file_path, dir_init)
+                    relative_path = os.path.relpath(file_path, dir_dst)
                     quarantined_path = os.path.join(dir_quarantena, relative_path)
-                    # Crear directorios si no existen
                     os.makedirs(os.path.dirname(quarantined_path), exist_ok=True)
-                    # Mover archivo al directorio de cuarentena
                     shutil.move(file_path, quarantined_path)
                     print(f"Archivo {file} filtrado y movido a {quarantined_path}")
     except Exception as e:
         print(f"Error al filtrar archivos: {e}")
 
-
-#ejecutar
 if __name__ == "__main__":
-    config = None
-    menu_configuracion()
+    menu()
