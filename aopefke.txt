@@ -1,25 +1,24 @@
-3. FILTRATGE                                                                      
-Amb la infecció s’han adonat que alguns arxius del directori DIR_INIT amb extensió EXTENSIO_FILTRADA estan infectats. Aquests arxius no es classifiquen com els anteriors (no van al directori DIR_DST) sinó que es deixen a part en un directori específic (DIR_QUARANTENA) 
+rodrigoadmin@rodrigo:~$ ln -s practica3/directori1/arxiu1 practica3/softlink1
+rodrigoadmin@rodrigo:~$ ls
+Descargas   Escritorio  Música      practica3  Vídeos
+Documentos  Imágenes    Plantillas  Público
+rodrigoadmin@rodrigo:~$ ln -s practica3/directori1/arxiu1 practica3/softlink2
+rodrigoadmin@rodrigo:~$ cd practica3/
+rodrigoadmin@rodrigo:~/practica3$ cd ..
+rodrigoadmin@rodrigo:~$ tree practica3/ -a
+practica3/
+├── directori1
+│   ├── arxiu1
+│   └── arxiu2
+├── softlink1 -> practica3/directori1/arxiu1
+└── softlink2 -> practica3/directori1/arxiu1
 
-
-
-El valor de l’extensió només pot  ser pdf , bin o exe
-
-EL filtratge ha de copiar l’arxiu amb aquella extensió a dins de  DIR_QUARANTENA respectant la ruta original.
-
-Ex: 
-EXTENSIO_FILTRADA és bin
-DIR_QUARANTENA és vault
-DIR_INIT és ggm_init
-
-Si tenim:
-	ggm_init/d1/d2/d3/foo.bin
-
-Hem de tenir:
-	vault/d1/d2/d3/foo.bin
-
-Fixeu-vos que la ruta és la mateixa
-
-Atenció:  aquesta funcionalitat no es deu poder executar si no s’ha fet primer la de classificació
-
-
+2 directories, 4 files
+rodrigoadmin@rodrigo:~$ cd practica3/
+rodrigoadmin@rodrigo:~/practica3$ cat softlink1
+cat: softlink1: No existe el fichero o el directorio
+rodrigoadmin@rodrigo:~/practica3$ ls -l
+total 4
+drwxr-xr-x 2 rodrigoadmin rodrigoadmin 4096 may 16 09:29 directori1
+lrwxrwxrwx 1 rodrigoadmin rodrigoadmin   27 may 16 09:31 softlink1 -> practica3/directori1/arxiu1
+lrwxrwxrwx 1 rodrigoadmin rodrigoadmin   27 may 16 09:32 softlink2 -> practica3/directori1/arxiu1
